@@ -37,6 +37,10 @@ def print_parangs(name, beg_time, end_time, coord_ra, coord_dec, timezone):
         obs = Observer(longitude = '21d24m40s' , latitude='-30d43m16s',
                        elevation = 0*u.m , name = 'MeerKAT',
                        timezone=timezone)
+    elif name.lower() == 'alma':
+        obs = Observer(longitude = '67d45m12s' , latitude='-23d01m09s',
+                       elevation = 0*u.m , name = 'ALMA',
+                       timezone=timezone)
     else:
         raise NotImplementedError("Unknown telescope name")
 
