@@ -1,0 +1,14 @@
+#! /bin/bash
+
+cwd=$PWD
+cmd=$@
+
+ssh krishna@transfer.ilifu.ac.za << EOF
+   echo "cd $cwd"
+
+   cd $cwd
+   echo "Running $cmd"
+
+   $cmd
+   exit
+EOF
