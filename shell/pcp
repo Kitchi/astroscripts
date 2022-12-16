@@ -1,0 +1,72 @@
+#! /bin/bash
+
+help_message="\n\
+        Usage : pcp <src> <dest>
+        \n\
+        Intended as a drop-in replacement for the cp utility.\n\
+        Requires gnu parallel. \n\
+        \n\
+        src can be a list of files, or a directory.\n\
+        If src is a directory, this script will recursively copy the contents\n\
+        of the directory in parallel.\n\
+        \n\
+        \n\
+        Options:\n\
+        -h --help    \t Display this help message\n\
+        \n"
+
+
+# If no args are passed, print help and quit
+if [[ "$#" -eq 0 ]]; then
+    echo -e $help_message
+    exit 1
+fi
+
+# If -h or --help is in args, print help and quit
+
+for arg in "$@"; do
+    if [[ "-h" == $arg || "--help" == $arg ]]; then
+        echo -e $help_message
+        exit 1
+    fi
+done
+
+# @ is for array of arguments
+# : means at position
+# $# is the length of array arguments
+dest=${@:$#}
+length=$(($#-1))
+src=(${@:1:$#-1})
+
+# bash is really weird
+# Count number of elements
+src_len=${#src[@]}
+
+src_is_dir=false
+do_parallel=true
+
+# If length one, check if it's a directory
+# If it is, create dir with same name in the destination
+# If not, run non-parallel cp
+if [[ $src_len -eq 1 ]]; then
+    if [[ -d $src ]]; then
+        basepath=$(basename $src)
+        mkdir -p $dest/$basepath
+        src_is_dir=true
+    else
+        do_parallel=false
+        src_is_dir=false
+    fi
+fi
+
+if [[ $do_parallel == true ]]; then
+    # If copying an entire directory, glob dir contents before copy
+    if [[ $src_is_dir == true ]]; then
+        printf '%s\0' $src/* | parallel -0 cp -ra {} $dest/$basepath/
+    else
+        printf '%s\0' $src | parallel -0 cp -ra {} $dest/
+    fi
+else
+    echo "using cp"
+    cp -ra $src $dest
+fi
