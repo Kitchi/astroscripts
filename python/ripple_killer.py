@@ -54,8 +54,11 @@ def kill_ripple():
         fig, ax = plt.subplots(2, 1, figsize=(10, 6))
         ax[0].imshow(dat, cmap='viridis', origin='lower', norm=SymLogNorm(linthresh=1e-5, vmin=-0.01, vmax=0.1))
         ax[1].imshow(ifftdat, cmap='viridis', origin='lower', norm=SymLogNorm(linthresh=1e-5, vmin=-0.01, vmax=0.1))
-        #ax.imshow(np.abs(fftdat), cmap='viridis', origin='lower')
         plt.tight_layout()
+
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        ax.imshow(np.abs(fftdat), cmap='viridis', origin='lower)
+        ax.set_title('FFT Magnitude')
         plt.show()
 
     if args.outfile:
