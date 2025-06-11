@@ -21,7 +21,8 @@ def cone_search(nvss_cat, ra, dec, radius):
 
     RA and DEC must be of the format HHhMMmSS.SSs DDdMMmSS.SSs
 
-    The RM catalog can be obtained here - http://www.ras.ucalgary.ca/rmcatalogue/RMCatalogue.txt
+    The RM catalog can be obtained here - https://cdsarc.cds.unistra.fr/ftp/J/ApJ/702/1230/catalog.dat.gz
+    and unzipped. If it does not exist in your directory already it will be automatically downloaded (~ 2 MB).
     """
 
     try:
@@ -29,6 +30,13 @@ def cone_search(nvss_cat, ra, dec, radius):
     except ValueError as e:
         print("Invalid format for RA and/or DEC")
         raise e
+
+    ## Download catalog if it doesn't exist
+    if not os.path.exists(nvss_cat):
+        print("Downloading NVSS RM catalog...")
+        os.system("wget https://cdsarc.cds.unistra.fr/ftp/J/ApJ/702/1230/catalog.dat.gz")
+        os.system("gunzip catalog.dat.gz")
+        nvss_cat = "catalog.dat"
 
     df = pd.read_csv(nvss_cat, delim_whitespace=True, header=None)
     ra = [f"{hh}h{mm}m{ss}s" for hh, mm, ss in zip(df[0], df[1], df[2])]
