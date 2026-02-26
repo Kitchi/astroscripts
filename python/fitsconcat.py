@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
+import argparse
 import os
 import re
-import glob
 import time
 import numpy as np
 
@@ -103,7 +103,7 @@ def fill_cube_with_images(imlist, nstokes=4, outname='concat.fits'):
     outhdu.close()
 
     # collect per-channel frequencies from input images
-    freqs = [fits.getheader(im)['CRVAL3'] for im in imlist]
+    freqs = [float(fits.getheader(im)['CRVAL3']) for im in imlist]
     nchan = len(freqs)
     cdelt3 = np.median(np.diff(freqs))  # channel width
     crpix3 = (nchan + 1) // 2                    # integer center channel (1-based)
@@ -112,8 +112,8 @@ def fill_cube_with_images(imlist, nstokes=4, outname='concat.fits'):
     fitsheader = {
             "NAXIS3": nchan,
             "CRPIX3": crpix3,
-            "CRVAL3": f"{crval3:.12E}",
-            "CDELT3": f"{cdelt3:.12E}",
+            "CRVAL3": float(crval3),
+            "CDELT3": float(cdelt3),
             }
 
     update_fits_header(outname, fitsheader)
@@ -125,14 +125,23 @@ def fill_cube_with_images(imlist, nstokes=4, outname='concat.fits'):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description="Concatenate per-channel FITS images into a single cube.")
+    parser.add_argument("files", nargs="+", help="Input FITS files")
+    parser.add_argument("--nstokes", type=int, default=1,
+                        help="Number of Stokes planes (default: 1)")
+    parser.add_argument("--output", default="concat.fits",
+                        help="Output filename (default: concat.fits)")
+    args = parser.parse_args()
+
     t = time.time()
     print("Starting fitsconcat at ", time.time())
 
-    imlist = natural_sort(glob.glob("T23t17_J161533p503000.n*.residual.fits"))
-
+    imlist = natural_sort(args.files)
+    print(f"Matched {len(imlist)} files")
     print("making empty image")
-    make_empty_image(imlist, nstokes=1)
+    make_empty_image(imlist, nstokes=args.nstokes, outname=args.output)
     print("filling cube with images")
-    fill_cube_with_images(imlist, nstokes=1)
+    fill_cube_with_images(imlist, nstokes=args.nstokes, outname=args.output)
     print("Ending fitsconcat at ", time.time())
     print("Elapsed time is ", time.time() - t)
